@@ -2,15 +2,11 @@ package budget;
 
 import budget.data.*;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Menu {
     private Store store;
-    private Category categories;
+    private StoreCategories categories;
     private boolean working = true;
     private Scanner scanner;
     private boolean workingSecondLvlMenu;
@@ -23,11 +19,11 @@ public class Menu {
         this.store = store;
     }
 
-    public Category getCategories() {
+    public StoreCategories getCategories() {
         return categories;
     }
 
-    public void setCategories(Category categories) {
+    public void setCategories(StoreCategories categories) {
         this.categories = categories;
     }
 
@@ -50,7 +46,7 @@ public class Menu {
             switch (this.scanner.nextLine()) {
                 case "1": {
                     addIncome();
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "2": {
@@ -58,7 +54,7 @@ public class Menu {
                     while (workingSecondLvlMenu){
                         addPurchase();
                     }
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "3": {
@@ -66,32 +62,32 @@ public class Menu {
                     while (workingSecondLvlMenu){
                         showListPurchases();
                     }
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "4": {
                     showBalance();
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "5": {
                     saveToFile();
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "6": {
                     loudFromFile();
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "7": {
                     sort();
-                    System.out.println("");
+                    System.out.println();
                     break;
                 }
                 case "0": {
                     this.working = false;
-                    System.out.println("");
+                    System.out.println();
                     System.out.println("Bye!");
                     break;
                 }
@@ -103,7 +99,7 @@ public class Menu {
     }
 
     private void addIncome() {
-        System.out.println("");
+        System.out.println();
         System.out.println("Enter income:");
         double income = Double.parseDouble(this.scanner.nextLine());
         Operation operation = new Operation(Type.INCOME, -1 , "income", income);
@@ -215,7 +211,7 @@ public class Menu {
                 .append(cat)
                 .append(System.lineSeparator());
         }
-        if (addAllInMenu == true){
+        if (addAllInMenu){
             text.append(allCategories.size()+1)
                     .append(") All")
                     .append(System.lineSeparator());
@@ -279,85 +275,42 @@ public class Menu {
 
     }
     private void sortAllPurchases(){
-        StringBuilder result = new StringBuilder();
-        Double total = 0d;
-
-        result.append("All:" + System.lineSeparator());
-
-        List<Operation> list = this.store.getAllParcelSorted();
-        for (Operation operation : list){
-            result.append(operation.getName() + String.format(" $%.2f", operation.getAmount()) + System.lineSeparator());
-            total += operation.getAmount();
-        }
-
-        result.append(String.format("Total: $%.2f", total));
-        if (total == 0){
+        List<Operation> list = this.store.getAllParcel();
+        Collections.sort(list,(e1,e2) -> e1.getAmount() < e2.getAmount()? 1 : -1);
+        if (store.countAllPurchase() == 0){
             System.out.println("Purchase list is empty!");
         }else {
-            System.out.println(result);
+            System.out.println("All:");
+            list.forEach(e -> System.out.printf(e.getName() + String.format(" $%.2f", e.getAmount()) + System.lineSeparator()));
+            System.out.printf("Total: $%.2f" + System.lineSeparator(), store.countAllPurchase());
         }
     }
     private void sortByType(){
-        StringBuilder result = new StringBuilder();
-        Double total = 0d;
-        boolean isSorted = false;
+        ArrayList<Integer> sortedList = new ArrayList<>();
 
-        result.append("Types:" + System.lineSeparator());
-        int[] sortedIdCategory = new int[categories.getCategories().size()];
-        for (int a = 0; a < sortedIdCategory.length; a++){
-            sortedIdCategory[a] = a;
+        for (int a = 0; a < categories.getCategories().size(); a++){
+            sortedList.add(a);
         }
 
-        while (!isSorted){
-            isSorted = true;
-            for (int a = 0; a < sortedIdCategory.length-1; a++){
+        Collections.sort(sortedList,(o1, o2) -> store.countCategoryById(o1) < store.countCategoryById(o2) ?  1 : -1);
 
-                int firstId = sortedIdCategory[a];
-                int secondId = sortedIdCategory[a+1];
-
-                if (store.countCategoryById(firstId) < store.countCategoryById(secondId)){
-                    sortedIdCategory[a] = secondId;
-                    sortedIdCategory[a+1] = firstId;
-                    isSorted = false;
-                }
-            }
-        }
-
-
-        for (int a : sortedIdCategory){
-            result.append(String.format("%s - $%.2f" + System.lineSeparator(), categories.getCategoryById(a) , store.countCategoryById(a)));
-            total += store.countCategoryById(a);
-        }
-
-        result.append(String.format("Total sum: $%.2f", total));
-
-        System.out.println(result);
+        System.out.print("Types:" + System.lineSeparator());
+        sortedList.forEach(element -> System.out.printf("%s - $%.2f" + System.lineSeparator(), categories.getCategoryById(element) , store.countCategoryById(element)));
+        System.out.printf("Total sum: $%.2f" + System.lineSeparator(), store.countAllPurchase());
     }
+
     private void sortCertainType(){
         Boolean showAllInMenu = false;
-
         showCategoryMenu(showAllInMenu);
-
-        int category = Integer.parseInt(this.scanner.nextLine()) - 1;
-
-        StringBuilder result = new StringBuilder();
-        System.out.println();
-        Double total = 0d;
-
-        result.append( categories.getCategoryById(category) + ":" + System.lineSeparator());
-
-        List<Operation> list = this.store.getByCategorySorted(category);
-
-        for (Operation operation : list){
-            result.append(operation.getName() + String.format(" $%.2f", operation.getAmount()) + System.lineSeparator());
-            total += operation.getAmount();
-        }
-        result.append(String.format("Total: $%.2f", total));
-        if (total == 0){
+        int idCategory = Integer.parseInt(this.scanner.nextLine()) - 1;
+        List<Operation> list = this.store.getByCategorySorted(idCategory);
+        if (store.countCategoryById(idCategory) == 0){
             System.out.println("Purchase list is empty!");
         }else {
-            System.out.println(result);
+            System.out.println();
+            System.out.println(categories.getCategoryById(idCategory) + ":");
+            list.forEach(element -> {System.out.println(element.getName() + String.format(" $%.2f", element.getAmount()));});
+            System.out.printf("Total: $%.2f" + System.lineSeparator(), store.countCategoryById(idCategory));
         }
     }
-
 }

@@ -1,12 +1,12 @@
 package budget;
 
-import budget.data.Category;
+import budget.data.StoreCategories;
 import budget.data.Store;
 
 public class Main {
     public static void main(String[] args) {
         Store store = new Store();
-        Category category = new Category();
+        StoreCategories category = new StoreCategories();
         Menu menu = new Menu();
         menu.setStore(store);
         menu.setCategories(category);

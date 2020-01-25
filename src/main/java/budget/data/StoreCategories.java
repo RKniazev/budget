@@ -1,12 +1,13 @@
 package budget.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class Category {
+public class StoreCategories {
     private final List<String> categories = new ArrayList<>();
 
-    public Category() {
+    public StoreCategories() {
         super();
         addStandard();
     }
@@ -23,9 +24,7 @@ public class Category {
     }
 
     public void addCategory(String...strings){
-        for (String string:strings){
-            categories.add(string);
-        }
+        Collections.addAll(categories, strings);
     }
 
     public String getCategoryById(int id){

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Store {
     private static final Store INST = new Store();
@@ -37,37 +38,14 @@ public class Store {
         return result;
     }
 
-    public List<Operation> getAllParcelSorted(){
-        return sortOperation(getAllParcel());
-    }
-
     public List<Operation> getByCategory(int id) {
         List<Operation> result = new ArrayList<>();
-        for (Operation operation : operations) {
-            if (operation.getCategory() == id) {
-                result.add(operation);
-            }
-        }
+        operations.forEach(element -> { if (element.getCategory()==id && element.getType().equals(Type.PURCHASE)) result.add(element);});
         return result;
     }
 
     public List<Operation> getByCategorySorted(int id){
-        return sortOperation(getByCategory(id));
-    }
-
-    public List<Operation> sortOperation(List<Operation> input){
-        boolean isSorted = false;
-        while (!isSorted){
-            isSorted = true;
-            for (int a = 0; a < input.size()-1; a++) {
-                if (input.get(a).getAmount() < input.get(a+1).getAmount()){
-                    isSorted = false;
-                    Collections.swap(input,a,a+1);
-                }
-            }
-        }
-
-        return input;
+        return getByCategory(id);
     }
 
     public double countAmount(){
@@ -85,6 +63,10 @@ public class Store {
             }
         }
         return count;
+    }
+
+    public double countAllPurchase(){
+        return operations.stream().filter(e -> e.getType() == Type.PURCHASE).mapToDouble(Operation::getAmount).sum();
     }
 
     public double countCategoryById(int id){

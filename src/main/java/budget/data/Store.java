@@ -30,11 +30,9 @@ public class Store {
 
     public List<Operation> getAllParcel(){
         List<Operation> result = new ArrayList<>();
-        for (Operation operation : operations){
-            if (operation.getType() == Type.PURCHASE){
-                result.add(operation);
-            }
-        }
+
+        operations.stream().filter(e -> e.getType()==Type.PURCHASE).forEach(e -> result.add(e));
+
         return result;
     }
 
@@ -50,18 +48,8 @@ public class Store {
 
     public double countAmount(){
         double count = 0;
-        for (Operation operation : operations){
-            switch (operation.getType()){
-                case INCOME: {
-                    count += operation.getAmount();
-                    break;
-                }
-                case PURCHASE: {
-                    count -= operation.getAmount();
-                    break;
-                }
-            }
-        }
+        count += operations.stream().filter(operation -> operation.getType()==Type.INCOME).mapToDouble(Operation::getAmount).sum();
+        count -= operations.stream().filter(operation -> operation.getType()==Type.PURCHASE).mapToDouble(Operation::getAmount).sum();
         return count;
     }
 
@@ -70,11 +58,7 @@ public class Store {
     }
 
     public double countCategoryById(int id){
-        double count = 0;
-        for (Operation operation : getByCategory(id)){
-            count += operation.getAmount();
-        }
-        return count;
+        return (double) getByCategory(id).stream().count();
     }
 
 
